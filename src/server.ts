@@ -19,6 +19,11 @@ import config from '@/config';
 import limiter from '@/lib/express_rate_limit';
 
 /**
+ * Router
+ */
+import v1Routes from '@/routes/v1';
+
+/**
  * Types
  */
 import type { CorsOptions } from 'cors';
@@ -66,13 +71,18 @@ app.use(helmet());
 // Apply rate limiting middleware to prevent excessive request and enhanvce security
 app.use(limiter);
 
+
+/**
+ * Immediately Invoke Async Function Expression (IIFE) to start the server.
+ * 
+ * - Tries to connect to the database before initializing the server.
+ * - Defines the API routes (`/api/v1`).
+ * - Start the server on the specified PORT and logs the running URL.
+ * - If error occurs during startup, its is logged, and the process exist with status 1.
+ */
 (async () => {
     try {
-        app.get('/', (req, res) => {
-            res.json({
-                message: "Hello world",
-            });
-        })
+        app.use('/api/v1', v1Routes);
 
         app.listen(config.PORT, () => {
             console.log(`Server running: http://localhost:${config.PORT}`);
@@ -85,3 +95,30 @@ app.use(limiter);
         }
     }
 })();
+
+/**
+ * Handles server shutdown gracefully by disconnecting fromthe database.
+ * 
+ * - Attempting to disconnect from the database before shutting down the server.
+ * - Logs a success message if the disconnection is successful.
+ * - if an error occurs during disconnection, it is logged to the console.
+ * - Exist the process with status code `0` (indicating a successful shutdown).
+ */
+const handleServershutdown = async () => {
+    try {
+        console.log('Server SHUTDOWN');
+        process.exit(0);
+    } catch (error) {
+        console.log('Error during server shutdown', error);
+    }
+}
+
+/**
+ * Listens for termination signals ('SIGTERM' AND `SIGINT`).
+ * 
+ * - `SIGTERM` is typically sent when stopping a process (e.g., `kill` command or container shutdown).
+ * - `SIGINT` is triggered when the user interrupt the process (e.g., pressing `Ctrl + C`).
+ * - when either signal is received, 'handleServerShurdown' is executed to ensure proper cleanup.
+ */
+process.on('SIGTERM', handleServershutdown);
+process.on('SIGINT', handleServershutdown);
