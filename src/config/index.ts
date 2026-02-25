@@ -25,7 +25,9 @@ const config = {
     WHITELIST_ADMINS_MAIL: [
         'oghenemineemma@gmail.com',
         'onojefemuemine@gmail.com'
-    ]
-}
+    ],
+    defaultResLimit: 20,
+    defaultResOffset: 0,
+};
 
 export default config;
